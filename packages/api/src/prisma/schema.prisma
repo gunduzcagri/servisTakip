@@ -1,0 +1,251 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  TECHNICIAN
+  CUSTOMER
+  CASHIER
+}
+
+enum ServiceStatus {
+  RECEIVED
+  INSPECTING
+  PRICE_OFFER
+  APPROVED
+  CANCELLED
+  PARTS_WAITING
+  REPAIRING
+  QC
+  READY
+  DELIVERED
+}
+
+enum PhotoType {
+  BEFORE
+  DURING
+  AFTER
+}
+
+enum NotificationChannel {
+  SMS
+  EMAIL
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum NotificationTrigger {
+  RECEIVED
+  INSPECTING
+  PRICE_OFFER
+  APPROVED
+  PARTS_WAITING
+  REPAIRING
+  QC
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+model Branch {
+  id            String          @id @default(uuid())
+  name          String
+  address       String?
+  phone         String?
+  isHeadquarters Boolean        @default(false)
+  users         User[]
+  serviceRecords ServiceRecord[]
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  @@map("branches")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  passwordHash  String          @map("password_hash")
+  fullName      String          @map("full_name")
+  phone         String?
+  role          UserRole        @default(CUSTOMER)
+  branchId      String?         @map("branch_id")
+  branch        Branch?         @relation(fields: [branchId], references: [id])
+  isActive      Boolean         @default(true) @map("is_active")
+  customerRecords ServiceRecord[] @relation("Customer")
+  technicianRecords ServiceRecord[] @relation("Technician")
+  statusLogs    StatusLog[]
+  notifications Notification[]
+  createdTemplates SectorTemplate[] @relation("TemplateCreator")
+  devices        Device[]       @relation("DeviceCustomer")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model SectorTemplate {
+  id        String              @id @default(uuid())
+  name      String
+  fields    Json
+  isSystem  Boolean             @default(false) @map("is_system")
+  createdBy String?             @map("created_by")
+  creator   User?               @relation("TemplateCreator", fields: [createdBy], references: [id])
+  devices   Device[]
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+
+  @@map("sector_templates")
+}
+
+model Device {
+  id            String          @id @default(uuid())
+  customerId    String          @map("customer_id")
+  customer      User            @relation("DeviceCustomer", fields: [customerId], references: [id])
+  templateId    String          @map("template_id")
+  template      SectorTemplate  @relation(fields: [templateId], references: [id])
+  dynamicFields Json?           @map("dynamic_fields")
+  qrCode        String?         @map("qr_code")
+  barcode       String?
+  serviceRecords ServiceRecord[]
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  @@map("devices")
+}
+
+model ServiceRecord {
+  id               String         @id @default(uuid())
+  trackingNumber   String         @unique @map("tracking_number")
+  customerId       String         @map("customer_id")
+  customer         User           @relation("Customer", fields: [customerId], references: [id])
+  deviceId         String         @map("device_id")
+  device           Device         @relation(fields: [deviceId], references: [id])
+  technicianId     String?        @map("technician_id")
+  technician       User?          @relation("Technician", fields: [technicianId], references: [id])
+  branchId         String?        @map("branch_id")
+  branch           Branch?        @relation(fields: [branchId], references: [id])
+  status           ServiceStatus  @default(RECEIVED)
+  faultDescription String?        @map("fault_description")
+  estimatedCost    Float?        @map("estimated_cost")
+  customerApproved Boolean        @default(false) @map("customer_approved")
+  estimatedDelivery DateTime?     @map("estimated_delivery")
+  deliveredAt      DateTime?      @map("delivered_at")
+  statusLogs       StatusLog[]
+  actions          ServiceAction[]
+  serviceParts     ServicePart[]
+  photos           ServicePhoto[]
+  notifications    Notification[]
+  ratings          CustomerRating[]
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@index([customerId])
+  @@index([technicianId])
+  @@index([status])
+  @@map("service_records")
+}
+
+model StatusLog {
+  id              String         @id @default(uuid())
+  serviceRecordId String         @map("service_record_id")
+  serviceRecord   ServiceRecord  @relation(fields: [serviceRecordId], references: [id])
+  status          ServiceStatus
+  note            String?
+  changedBy       String?        @map("changed_by")
+  changedByUser   User?          @relation(fields: [changedBy], references: [id])
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@map("status_logs")
+}
+
+model ServiceAction {
+  id              String         @id @default(uuid())
+  serviceRecordId String         @map("service_record_id")
+  serviceRecord   ServiceRecord  @relation(fields: [serviceRecordId], references: [id])
+  description     String
+  laborCost       Float?        @map("labor_cost")
+  timeSpentMin    Int?           @map("time_spent_min")
+  technicianId    String?        @map("technician_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@map("service_actions")
+}
+
+model Part {
+  id              String         @id @default(uuid())
+  name            String
+  sku             String         @unique
+  description     String?
+  unitPrice       Float          @map("unit_price")
+  stockQuantity   Int            @default(0) @map("stock_quantity")
+  criticalThreshold Int          @default(5) @map("critical_threshold")
+  serviceParts    ServicePart[]
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@map("parts")
+}
+
+model ServicePart {
+  id              String         @id @default(uuid())
+  serviceRecordId String         @map("service_record_id")
+  serviceRecord   ServiceRecord  @relation(fields: [serviceRecordId], references: [id])
+  partId          String         @map("part_id")
+  part            Part           @relation(fields: [partId], references: [id])
+  quantity        Int            @default(1)
+  unitPriceAtTime Float          @map("unit_price_at_time")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@map("service_parts")
+}
+
+model ServicePhoto {
+  id              String         @id @default(uuid())
+  serviceRecordId String         @map("service_record_id")
+  serviceRecord   ServiceRecord  @relation(fields: [serviceRecordId], references: [id])
+  url             String
+  type            PhotoType      @default(BEFORE)
+  note            String?
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@map("service_photos")
+}
+
+model Notification {
+  id              String              @id @default(uuid())
+  userId          String              @map("user_id")
+  user            User                @relation(fields: [userId], references: [id])
+  serviceRecordId String              @map("service_record_id")
+  serviceRecord   ServiceRecord       @relation(fields: [serviceRecordId], references: [id])
+  channel         NotificationChannel
+  trigger         NotificationTrigger
+  content         String
+  status          NotificationStatus  @default(PENDING)
+  sentAt          DateTime?           @map("sent_at")
+  errorMessage    String?             @map("error_message")
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model CustomerRating {
+  id              String        @id @default(uuid())
+  serviceRecordId String        @unique @map("service_record_id")
+  serviceRecord   ServiceRecord @relation(fields: [serviceRecordId], references: [id])
+  score           Int
+  comment         String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@map("customer_ratings")
+}
