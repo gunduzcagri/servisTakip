@@ -8,6 +8,7 @@ import {
   QuoteInput,
 } from "./service.dto";
 import { isValidTransition, generateTrackingNumber } from "./state-machine";
+import { sendStatusEmail, sendQuoteEmail } from "../notification/email.service";
 
 export class ServiceService {
   async list(params: {
@@ -152,7 +153,10 @@ export class ServiceService {
   }
 
   async updateStatus(id: string, input: UpdateStatusInput, userId: string) {
-    const record = await prisma.serviceRecord.findUnique({ where: { id } });
+    const record = await prisma.serviceRecord.findUnique({
+      where: { id },
+      include: { customer: { select: { email: true } } },
+    });
     if (!record) throw AppError.notFound("Servis kaydi bulunamadi");
 
     if (!isValidTransition(record.status, input.status)) {
@@ -175,18 +179,26 @@ export class ServiceService {
       },
     });
 
+    // Customer'a e-posta gonder
+    if (record.customer?.email) {
+      sendStatusEmail(record.customer.email, record.trackingNumber, input.status, input.note).catch(() => {});
+    }
+
     return updated;
   }
 
   async sendQuote(id: string, input: QuoteInput) {
-    const record = await prisma.serviceRecord.findUnique({ where: { id } });
+    const record = await prisma.serviceRecord.findUnique({
+      where: { id },
+      include: { customer: { select: { email: true } } },
+    });
     if (!record) throw AppError.notFound("Servis kaydi bulunamadi");
 
     if (record.status !== "INSPECTING") {
       throw AppError.validation("Fiyat teklifi sadece inceleme asamasindaki kayitlar icin gonderilebilir");
     }
 
-    return prisma.serviceRecord.update({
+    const updated = await prisma.serviceRecord.update({
       where: { id },
       data: {
         estimatedCost: input.estimatedCost,
@@ -200,17 +212,27 @@ export class ServiceService {
         },
       },
     });
+
+    // Musteriye fiyat teklifi e-postasi gonder
+    if (record.customer?.email) {
+      sendQuoteEmail(record.customer.email, record.trackingNumber, input.estimatedCost, record.faultDescription || undefined).catch(() => {});
+    }
+
+    return updated;
   }
 
   async approveQuote(id: string) {
-    const record = await prisma.serviceRecord.findUnique({ where: { id } });
+    const record = await prisma.serviceRecord.findUnique({
+      where: { id },
+      include: { customer: { select: { email: true } } },
+    });
     if (!record) throw AppError.notFound("Servis kaydi bulunamadi");
 
     if (record.status !== "PRICE_OFFER") {
       throw AppError.validation("Sadece fiyat teklifi asamasindaki kayitlar onaylanabilir");
     }
 
-    return prisma.serviceRecord.update({
+    const updated = await prisma.serviceRecord.update({
       where: { id },
       data: {
         status: "APPROVED",
@@ -223,6 +245,44 @@ export class ServiceService {
         },
       },
     });
+
+    if (record.customer?.email) {
+      sendStatusEmail(record.customer.email, record.trackingNumber, "APPROVED", "Musteri onarimi onayladi").catch(() => {});
+    }
+
+    return updated;
+  }
+
+  async rejectQuote(id: string) {
+    const record = await prisma.serviceRecord.findUnique({
+      where: { id },
+      include: { customer: { select: { email: true } } },
+    });
+    if (!record) throw AppError.notFound("Servis kaydi bulunamadi");
+
+    if (record.status !== "PRICE_OFFER") {
+      throw AppError.validation("Sadece fiyat teklifi asamasindaki kayitlar reddedilebilir");
+    }
+
+    const updated = await prisma.serviceRecord.update({
+      where: { id },
+      data: {
+        status: "CANCELLED",
+        customerApproved: false,
+        statusLogs: {
+          create: {
+            status: "CANCELLED",
+            note: "Musteri fiyat teklifini reddetti",
+          },
+        },
+      },
+    });
+
+    if (record.customer?.email) {
+      sendStatusEmail(record.customer.email, record.trackingNumber, "CANCELLED", "Teklif reddedildi").catch(() => {});
+    }
+
+    return updated;
   }
 
   async addAction(id: string, input: AddActionInput, technicianId: string) {

@@ -103,9 +103,19 @@ router.post(
 // Customer: Approve quote
 router.post(
   "/:id/approve",
-  authorize("CUSTOMER"),
+  authorize("ADMIN", "TECHNICIAN", "CUSTOMER"),
   asyncHandler(async (req: Request, res: Response) => {
     const result = await serviceService.approveQuote(req.params.id);
+    res.json(result);
+  })
+);
+
+// Customer: Reject quote
+router.post(
+  "/:id/reject",
+  authorize("ADMIN", "TECHNICIAN", "CUSTOMER"),
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await serviceService.rejectQuote(req.params.id);
     res.json(result);
   })
 );

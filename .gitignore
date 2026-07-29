@@ -4,4 +4,6 @@ dist/
 *.db-journal
 uploads/*
 !uploads/.gitkeep
+packages/api/uploads/*
+!packages/api/uploads/.gitkeep
 .env.local

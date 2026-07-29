@@ -9,6 +9,7 @@ import partRoutes from "./modules/service/part.routes";
 import deviceRoutes from "./modules/service/device.routes";
 import templateRoutes from "./modules/template/template.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+import settingsRoutes from "./modules/settings/settings.routes";
 
 const app = express();
 
@@ -23,6 +24,26 @@ app.use("/api/parts", partRoutes);
 app.use("/api/devices", deviceRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/settings", settingsRoutes);
+
+app.get("/", (_req, res) => {
+  res.json({
+    name: "ServisNet API",
+    version: "0.1.0",
+    docs: "/api/health",
+    endpoints: [
+      "POST /api/auth/login",
+      "POST /api/auth/register",
+      "GET /api/auth/me",
+      "GET /api/services",
+      "POST /api/services",
+      "GET /api/services/track/:trackingNumber",
+      "GET /api/parts",
+      "GET /api/templates",
+      "GET /api/dashboard/summary",
+    ],
+  });
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

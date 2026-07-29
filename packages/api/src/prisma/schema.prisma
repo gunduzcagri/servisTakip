@@ -249,3 +249,11 @@ model CustomerRating {
 
   @@map("customer_ratings")
 }
+
+model SystemSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+
+  @@map("system_settings")
+}

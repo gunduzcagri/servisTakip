@@ -49,6 +49,19 @@ async function main() {
     },
   });
 
+  const custPassword = await bcrypt.hash("musteri123", 10);
+  await prisma.user.upsert({
+    where: { email: "musteri@servisnet.com" },
+    update: {},
+    create: {
+      email: "musteri@servisnet.com",
+      passwordHash: custPassword,
+      fullName: "Mehmet Musteri",
+      phone: "0555 333 44 55",
+      role: UserRole.CUSTOMER,
+    },
+  });
+
   // Sector templates
   await prisma.sectorTemplate.upsert({
     where: { id: "template-phone" },
@@ -92,6 +105,9 @@ async function main() {
   console.log("Test hesaplari:");
   console.log("  Admin:      admin@servisnet.com / admin123");
   console.log("  Teknisyen:  teknisyen@servisnet.com / tech123");
+  console.log("  Musteri:    musteri@servisnet.com / musteri123");
+  console.log("");
+  console.log("Takip No (demo): SRV-00001 (olusturulduysa)");
 }
 
 main()
