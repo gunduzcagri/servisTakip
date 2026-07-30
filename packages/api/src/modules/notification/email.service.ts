@@ -128,3 +128,30 @@ export async function sendQuoteEmail(
 
   return sendEmail(to, `ServisNet - ${trackingNumber} | Fiyat Teklifi`, html);
 }
+
+export async function sendCriticalStockAlert(
+  to: string,
+  partName: string,
+  sku: string,
+  currentStock: number,
+  criticalThreshold: number,
+  supplierName?: string
+) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #ff4d4f;">ServisNet - Kritik Stok Uyarisı</h2>
+      <div style="background: #fff1f0; border-left: 4px solid #ff4d4f; padding: 16px; margin: 16px 0;">
+        <p style="margin: 0; font-size: 16px;"><strong>Parca:</strong> ${partName}</p>
+        <p style="margin: 8px 0; font-size: 14px;"><strong>SKU:</strong> ${sku}</p>
+        <p style="margin: 8px 0; font-size: 14px;"><strong>Mevcut Stok:</strong> <span style="color: #ff4d4f; font-weight: bold; font-size: 18px;">${currentStock}</span></p>
+        <p style="margin: 8px 0; font-size: 14px;"><strong>Kritik Esik:</strong> ${criticalThreshold}</p>
+        ${supplierName ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Tedarikci:</strong> ${supplierName}</p>` : ""}
+      </div>
+      <p style="color: #ff4d4f; font-weight: 600;">Bu parca kritik stok seviyesinin altina dustu. Lutfen ivedilikle siparis veriniz.</p>
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;" />
+      <p style="color: #999; font-size: 12px;">Bu e-posta ServisNet tarafindan otomatik olarak gonderilmistir.</p>
+    </div>
+  `;
+
+  return sendEmail(to, `ServisNet - Kritik Stok: ${partName}`, html);
+}

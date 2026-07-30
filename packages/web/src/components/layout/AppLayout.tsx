@@ -10,6 +10,7 @@ import {
   ShopOutlined,
   MailOutlined,
   BarChartOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../stores/auth";
 import { NetworkStatus } from "../NetworkStatus";
@@ -25,6 +26,7 @@ const menuItems = {
     { key: "/admin/users", icon: <UserOutlined />, label: "Kullanicilar" },
     { key: "/admin/templates", icon: <ShopOutlined />, label: "Sektor Sablonlari" },
     { key: "/admin/parts", icon: <SettingOutlined />, label: "Parca Stok" },
+    { key: "/admin/stock", icon: <InboxOutlined />, label: "Stok Yönetimi" },
     { key: "/admin/smtp", icon: <MailOutlined />, label: "E-posta Ayarlari" },
   ],
   TECHNICIAN: [

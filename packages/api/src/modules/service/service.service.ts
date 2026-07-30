@@ -9,6 +9,7 @@ import {
 } from "./service.dto";
 import { isValidTransition, generateTrackingNumber } from "./state-machine";
 import { sendStatusEmail, sendQuoteEmail } from "../notification/email.service";
+import { stockService } from "./stock.service";
 
 export class ServiceService {
   async list(params: {
@@ -311,6 +312,9 @@ export class ServiceService {
       throw AppError.validation(`Yetersiz stok. Mevcut: ${part.stockQuantity}`);
     }
 
+    const prevStock = part.stockQuantity;
+    const newStock = prevStock - input.quantity;
+
     const [servicePart] = await Promise.all([
       prisma.servicePart.create({
         data: {
@@ -323,9 +327,26 @@ export class ServiceService {
       }),
       prisma.part.update({
         where: { id: input.partId },
-        data: { stockQuantity: { decrement: input.quantity } },
+        data: { stockQuantity: newStock },
+      }),
+      prisma.stockMovement.create({
+        data: {
+          partId: input.partId,
+          type: "OUT",
+          quantity: input.quantity,
+          previousStock: prevStock,
+          newStock,
+          reason: `Service: ${record.trackingNumber}`,
+          referenceType: "SERVICE",
+          referenceId: id,
+          userId: record.technicianId || undefined,
+        },
       }),
     ]);
+
+    if (newStock <= part.criticalThreshold) {
+      await stockService.createStockAlert(input.partId, newStock, part.criticalThreshold);
+    }
 
     return servicePart;
   }
