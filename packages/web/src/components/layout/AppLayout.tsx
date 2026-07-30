@@ -13,6 +13,7 @@ import {
   InboxOutlined,
   MessageOutlined,
   DollarOutlined,
+  CarOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../stores/auth";
 import { NetworkStatus } from "../NetworkStatus";
@@ -30,6 +31,7 @@ const menuItems = {
     { key: "/admin/parts", icon: <SettingOutlined />, label: "Parca Stok" },
     { key: "/admin/stock", icon: <InboxOutlined />, label: "Stok Yönetimi" },
     { key: "/admin/accounting", icon: <DollarOutlined />, label: "On Muhasebe" },
+    { key: "/admin/cargo", icon: <CarOutlined />, label: "Kargo Takip" },
     { key: "/admin/smtp", icon: <MailOutlined />, label: "E-posta Ayarlari" },
     { key: "/admin/sms", icon: <MessageOutlined />, label: "SMS Gateway" },
   ],

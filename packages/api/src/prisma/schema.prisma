@@ -149,6 +149,7 @@ model ServiceRecord {
   notifications    Notification[]
   ratings          CustomerRating[]
   invoice          Invoice?
+  cargoShipment    CargoShipment?
   createdAt        DateTime       @default(now()) @map("created_at")
   updatedAt        DateTime       @updatedAt @map("updated_at")
 
@@ -459,6 +460,7 @@ model Invoice {
   customer        User?          @relation("InvoiceCustomer", fields: [customerId], references: [id])
   serviceRecordId String?        @unique @map("service_record_id")
   serviceRecord   ServiceRecord? @relation(fields: [serviceRecordId], references: [id])
+  cargoShipment   CargoShipment?
   items           InvoiceItem[]
   subtotal        Float          @default(0)
   taxRate         Float          @default(18) // KDV oranı
@@ -523,4 +525,81 @@ model Expense {
   @@index([category])
   @@index([date])
   @@map("expenses")
+}
+
+enum CargoCompany {
+  ARAS
+  YURTICI
+  MNG
+  PTT
+  SURAT
+  UPS
+  FEDEX
+  DHL
+  TRENDYOL
+  HEPJET
+}
+
+enum CargoStatus {
+  CREATED
+  PICKED_UP
+  IN_TRANSIT
+  AT_DESTINATION
+  DELIVERED
+  RETURNED
+  FAILED
+}
+
+model CargoShipment {
+  id              String        @id @default(uuid())
+  trackingNumber  String        @unique @map("tracking_number")
+  company         CargoCompany
+  status          CargoStatus   @default(CREATED)
+  serviceRecordId String?       @unique @map("service_record_id")
+  serviceRecord   ServiceRecord? @relation(fields: [serviceRecordId], references: [id])
+  invoiceId       String?       @unique @map("invoice_id")
+  invoice         Invoice?       @relation(fields: [invoiceId], references: [id])
+  senderName      String        @map("sender_name")
+  senderPhone     String        @map("sender_phone")
+  senderAddress   String        @map("sender_address")
+  senderCity      String        @map("sender_city")
+  recipientName   String        @map("recipient_name")
+  recipientPhone  String        @map("recipient_phone")
+  recipientAddress String       @map("recipient_address")
+  recipientCity   String        @map("recipient_city")
+  packageCount    Int           @default(1) @map("package_count")
+  weight          Float?
+  dimensions      String?       // 30x40x50 gibi
+  cargoCode       String?       @map("cargo_code") // Firma tarafindan verilen kod
+  barcode         String?
+  notes           String?
+  price           Float?
+  trackingHistory Json?         @map("tracking_history")
+  deliveredAt     DateTime?     @map("delivered_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([trackingNumber])
+  @@index([company])
+  @@index([status])
+  @@map("cargo_shipments")
+}
+
+model CargoConfig {
+  id          String       @id @default(uuid())
+  company     CargoCompany @unique
+  isActive    Boolean      @default(false) @map("is_active")
+  apiKey      String?      @map("api_key")
+  apiSecret   String?      @map("api_secret")
+  username    String?
+  password    String?
+  baseUrl     String?      @map("base_url")
+  senderName  String?      @map("sender_name")
+  senderPhone String?      @map("sender_phone")
+  senderCity  String?      @map("sender_city")
+  config      Json?        // Ek ayarlar
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@map("cargo_configs")
 }

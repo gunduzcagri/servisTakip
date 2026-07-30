@@ -11,6 +11,7 @@ import StockPage from "./pages/admin/StockPage";
 import SmtpSettingsPage from "./pages/admin/SmtpSettingsPage";
 import SmsSettingsPage from "./pages/admin/SmsSettingsPage";
 import AccountingPage from "./pages/admin/AccountingPage";
+import CargoPage from "./pages/admin/CargoPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import TechnicianDashboard from "./pages/technician/Dashboard";
 import CustomerDashboard from "./pages/customer/Dashboard";
@@ -102,6 +103,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["ADMIN"]}>
                 <AccountingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/cargo"
+            element={
+              <ProtectedRoute roles={["ADMIN", "TECHNICIAN"]}>
+                <CargoPage />
               </ProtectedRoute>
             }
           />

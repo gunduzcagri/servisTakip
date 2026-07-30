@@ -15,6 +15,7 @@ import reportRoutes from "./modules/report/report.routes";
 import qrRoutes from "./modules/qr/qr.routes";
 import smsRoutes from "./modules/notification/sms.routes";
 import accountingRoutes from "./modules/accounting/accounting.routes";
+import cargoRoutes from "./modules/cargo/cargo.routes";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/qr", qrRoutes);
 app.use("/api/sms", smsRoutes);
 app.use("/api/accounting", accountingRoutes);
+app.use("/api/cargo", cargoRoutes);
 
 app.get("/", (_req, res) => {
   res.json({
