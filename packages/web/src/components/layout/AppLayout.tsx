@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { Layout, Menu, Button, Typography, Dropdown, Spin } from "antd";
+import { Layout, Menu, Button, Typography, Dropdown, Spin, Space } from "antd";
 import {
   DashboardOutlined,
   SettingOutlined,
@@ -12,6 +12,7 @@ import {
   BarChartOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../stores/auth";
+import { NetworkStatus } from "../NetworkStatus";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -67,7 +68,10 @@ export default function AppLayout() {
         />
       </Sider>
       <Layout>
-        <Header style={{ background: "#fff", padding: "0 24px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+        <Header style={{ background: "#fff", padding: "0 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Space>
+            <NetworkStatus />
+          </Space>
           <Dropdown
             menu={{
               items: [

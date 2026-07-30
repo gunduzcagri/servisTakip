@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Form, Input, Select, Button, Typography, App } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Card, Form, Input, Select, Button, Typography, App, Alert } from "antd";
+import { ArrowLeftOutlined, WifiOutlined } from "@ant-design/icons";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "../../api/client";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
+import { addToQueue } from "../../utils/offlineQueue";
 
 const { Title } = Typography;
 
@@ -12,6 +14,7 @@ export default function CreateServicePage() {
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const { isOnline } = useOnlineStatus();
 
   const { data: templates } = useQuery({
     queryKey: ["templates"],
@@ -44,22 +47,38 @@ export default function CreateServicePage() {
         }
       }
 
-      const deviceRes = await api.post("/devices", {
+      const payload = {
         customerId: values.customerId,
         templateId: values.templateId,
         dynamicFields,
-      });
+      };
 
-      return api.post("/services", {
-        customerId: values.customerId,
-        deviceId: deviceRes.data.id,
-        technicianId: values.technicianId || undefined,
-        faultDescription: values.faultDescription || undefined,
-      });
+      if (isOnline) {
+        const deviceRes = await api.post("/devices", payload);
+
+        return await api.post("/services", {
+          customerId: values.customerId,
+          deviceId: deviceRes.data.id,
+          technicianId: values.technicianId || undefined,
+          faultDescription: values.faultDescription || undefined,
+        });
+      } else {
+        const action = addToQueue({
+          type: "CREATE_SERVICE",
+          url: "/api/services",
+          method: "POST",
+          body: { ...payload, technicianId: values.technicianId, faultDescription: values.faultDescription },
+        });
+        return { offline: true, id: action.id, trackingNumber: `OFFLINE-${action.id.slice(-6)}` } as any;
+      }
     },
-    onSuccess: (res) => {
-      message.success(`Servis kaydi olusturuldu: ${res.data.trackingNumber}`);
-      navigate(`/services/${res.data.id}`);
+    onSuccess: (res: any) => {
+      if (res.offline) {
+        message.success(`Kayit yerel olarak kaydedildi. ID: ${res.trackingNumber}. Internet baglandiginda otomatik gonderilecek.`);
+      } else {
+        message.success(`Servis kaydi olusturuldu: ${res.data.trackingNumber}`);
+      }
+      navigate("/services");
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.error?.message || "Hata olustu");
@@ -82,6 +101,18 @@ export default function CreateServicePage() {
       </Button>
 
       <Title level={3}>Yeni Servis Kaydi</Title>
+
+      {!isOnline && (
+        <Alert
+          message="Çevrimdışı Mod"
+          description="Verileriniz cihazda saklanacak ve internet bağlandığında otomatik olarak senkronize edilecektir."
+          type="warning"
+          icon={<WifiOutlined />}
+          style={{ marginBottom: 16 }}
+          showIcon
+          closable
+        />
+      )}
 
       <Card style={{ maxWidth: 800 }}>
         <Form
@@ -166,8 +197,9 @@ export default function CreateServicePage() {
               loading={createMutation.isPending}
               block
               size="large"
+              icon={!isOnline ? <WifiOutlined /> : undefined}
             >
-              Servis Kaydi Olustur
+              {!isOnline ? "Çevrimdışı Kaydet" : "Servis Kaydi Olustur"}
             </Button>
           </Form.Item>
         </Form>

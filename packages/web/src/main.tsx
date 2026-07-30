@@ -10,6 +10,20 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 0, refetchOnWindowFocus: false } },
 });
 
+// Register service worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/" })
+      .then((registration) => {
+        console.log("ServisNet Service Worker kaydedildi:", registration.scope);
+      })
+      .catch((err) => {
+        console.error("SW kayit hatasi:", err);
+      });
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

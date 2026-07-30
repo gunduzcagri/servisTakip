@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - ServisNet</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+      }
+      .container { max-width: 400px; }
+      h1 { font-size: 2.5em; margin-bottom: 10px; }
+      p { font-size: 1.1em; opacity: 0.9; line-height: 1.6; }
+      .icon { font-size: 4em; margin-bottom: 20px; }
+      .status { background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 20px; }
+      button {
+        background: #fff;
+        color: #667eea;
+        border: none;
+        padding: 12px 30px;
+        font-size: 1em;
+        border-radius: 25px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-weight: 600;
+      }
+      button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="icon">📡</div>
+      <h1>Offline Mod</h1>
+      <p>İnternet bağlantınız yok.</p>
+      <p>Verileriniz cihazınızda saklanır ve bağlantı sağlandığında otomatik olarak senkronize edilir.</p>
+      <div class="status">
+        <p><strong>💡 İpucu:</strong><br/>Kayıt oluşturmaya devam edebilirsiniz.<br/>İnternet bağlandığında otomatik gönderilir.</p>
+      </div>
+      <button onclick="location.reload()">🔄 Tekrar Dene</button>
+    </div>
+    <script>
+      window.addEventListener("online", () => {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: "ONLINE" });
+        }
+        location.reload();
+      });
+    </script>
+  </body>
+</html>
