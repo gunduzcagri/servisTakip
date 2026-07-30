@@ -10,6 +10,7 @@ import PartsPage from "./pages/admin/PartsPage";
 import StockPage from "./pages/admin/StockPage";
 import SmtpSettingsPage from "./pages/admin/SmtpSettingsPage";
 import SmsSettingsPage from "./pages/admin/SmsSettingsPage";
+import AccountingPage from "./pages/admin/AccountingPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import TechnicianDashboard from "./pages/technician/Dashboard";
 import CustomerDashboard from "./pages/customer/Dashboard";
@@ -93,6 +94,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["ADMIN"]}>
                 <SmsSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/accounting"
+            element={
+              <ProtectedRoute roles={["ADMIN"]}>
+                <AccountingPage />
               </ProtectedRoute>
             }
           />

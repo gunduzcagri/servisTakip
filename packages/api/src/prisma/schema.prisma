@@ -88,6 +88,7 @@ model User {
   notifications Notification[]
   createdTemplates SectorTemplate[] @relation("TemplateCreator")
   devices        Device[]       @relation("DeviceCustomer")
+  invoices       Invoice[]      @relation("InvoiceCustomer")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
@@ -147,6 +148,7 @@ model ServiceRecord {
   photos           ServicePhoto[]
   notifications    Notification[]
   ratings          CustomerRating[]
+  invoice          Invoice?
   createdAt        DateTime       @default(now()) @map("created_at")
   updatedAt        DateTime       @updatedAt @map("updated_at")
 
@@ -378,4 +380,147 @@ model SmsProviderConfig {
   updatedAt DateTime     @updatedAt @map("updated_at")
 
   @@map("sms_provider_configs")
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum InvoiceType {
+  SALES
+  PURCHASE
+  PROFORMA
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+  CHECK
+  OTHER
+}
+
+model Account {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  name        String
+  type        AccountType
+  parentId    String?       @map("parent_id")
+  parent      Account?      @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children    Account[]     @relation("AccountHierarchy")
+  description String?
+  isActive    Boolean       @default(true) @map("is_active")
+  balance     Float         @default(0)
+  transactions AccountTransaction[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@index([type])
+  @@map("accounts")
+}
+
+model AccountTransaction {
+  id          String      @id @default(uuid())
+  accountId   String      @map("account_id")
+  account     Account     @relation(fields: [accountId], references: [id])
+  type        String      // DEBIT, CREDIT
+  amount      Float
+  description String
+  referenceType String?   @map("reference_type") // INVOICE, PAYMENT, EXPENSE
+  referenceId String?     @map("reference_id")
+  date        DateTime    @default(now())
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@index([accountId])
+  @@index([date])
+  @@map("account_transactions")
+}
+
+model Invoice {
+  id              String         @id @default(uuid())
+  invoiceNumber   String         @unique @map("invoice_number")
+  type            InvoiceType
+  status          InvoiceStatus  @default(DRAFT)
+  customerId      String?        @map("customer_id")
+  customer        User?          @relation("InvoiceCustomer", fields: [customerId], references: [id])
+  serviceRecordId String?        @unique @map("service_record_id")
+  serviceRecord   ServiceRecord? @relation(fields: [serviceRecordId], references: [id])
+  items           InvoiceItem[]
+  subtotal        Float          @default(0)
+  taxRate         Float          @default(18) // KDV oranı
+  taxAmount       Float          @default(0)  @map("tax_amount")
+  total           Float          @default(0)
+  discount        Float          @default(0)
+  notes           String?
+  dueDate         DateTime?      @map("due_date")
+  issueDate       DateTime       @default(now()) @map("issue_date")
+  paidDate        DateTime?      @map("paid_date")
+  payments        Payment[]
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@index([invoiceNumber])
+  @@index([status])
+  @@index([customerId])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String      @id @default(uuid())
+  invoiceId   String      @map("invoice_id")
+  invoice     Invoice     @relation(fields: [invoiceId], references: [id])
+  description String
+  quantity    Int         @default(1)
+  unitPrice   Float       @map("unit_price")
+  totalPrice  Float       @map("total_price")
+  taxRate     Float       @default(18)
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  invoiceId       String        @map("invoice_id")
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
+  amount          Float
+  method          PaymentMethod @default(CASH)
+  reference       String?       // Dekont no, check no, etc.
+  notes           String?
+  paymentDate     DateTime      @default(now()) @map("payment_date")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@map("payments")
+}
+
+model Expense {
+  id          String      @id @default(uuid())
+  category    String
+  description String
+  amount      Float
+  date        DateTime    @default(now())
+  vendor      String?
+  invoiceNo   String?     @map("invoice_no") // Gelen fatura no
+  paymentMethod PaymentMethod @default(CASH) @map("payment_method")
+  notes       String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([date])
+  @@map("expenses")
 }
