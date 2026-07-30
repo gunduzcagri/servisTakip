@@ -341,3 +341,41 @@ model SystemSetting {
 
   @@map("system_settings")
 }
+
+enum SmsProvider {
+  NETGSM
+  TWILIO
+  BULKSMS
+}
+
+model SmsLog {
+  id          String        @id @default(uuid())
+  recipient   String        @map("recipient")
+  message     String
+  status      String        @default("PENDING") // PENDING, SENT, FAILED
+  provider    SmsProvider?
+  messageId   String?       @map("message_id")
+  errorCode   String?       @map("error_code")
+  errorMessage String?      @map("error_message")
+  segments    Int           @default(1)
+  cost        Float?
+  referenceType String?     @map("reference_type") // SERVICE, QUOTE, etc.
+  referenceId String?       @map("reference_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@index([recipient])
+  @@index([status])
+  @@map("sms_logs")
+}
+
+model SmsProviderConfig {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  provider  SmsProvider
+  isActive  Boolean      @default(false) @map("is_active")
+  config    Json         // Provider-specific config (API key, SID, etc.)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@map("sms_provider_configs")
+}

@@ -13,6 +13,7 @@ import dashboardRoutes from "./modules/dashboard/dashboard.routes";
 import settingsRoutes from "./modules/settings/settings.routes";
 import reportRoutes from "./modules/report/report.routes";
 import qrRoutes from "./modules/qr/qr.routes";
+import smsRoutes from "./modules/notification/sms.routes";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/qr", qrRoutes);
+app.use("/api/sms", smsRoutes);
 
 app.get("/", (_req, res) => {
   res.json({
