@@ -8,6 +8,7 @@ import UserManagementPage from "./pages/admin/UserManagementPage";
 import TemplatesPage from "./pages/admin/TemplatesPage";
 import PartsPage from "./pages/admin/PartsPage";
 import SmtpSettingsPage from "./pages/admin/SmtpSettingsPage";
+import ReportsPage from "./pages/admin/ReportsPage";
 import TechnicianDashboard from "./pages/technician/Dashboard";
 import CustomerDashboard from "./pages/customer/Dashboard";
 import ServiceListPage from "./pages/services/ServiceListPage";
@@ -74,6 +75,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["ADMIN"]}>
                 <SmtpSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/reports"
+            element={
+              <ProtectedRoute roles={["ADMIN"]}>
+                <ReportsPage />
               </ProtectedRoute>
             }
           />

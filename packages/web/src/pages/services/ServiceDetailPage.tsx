@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 import api from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
 import { STATUS_LABELS } from "./state-machine";
+import { QrModal } from "../../components/QrModal";
 
 const { Title, Text } = Typography;
 
@@ -148,6 +149,11 @@ export default function ServiceDetailPage() {
               <Button icon={<CameraOutlined />} onClick={() => setPhotoModal(true)}>
                 Fotograf
               </Button>
+              <QrModal
+                serviceId={id!}
+                trackingNumber={data.trackingNumber}
+                customerName={data.customer?.fullName}
+              />
               {availableStatuses.length > 0 && (
                 <Button
                   type="primary"

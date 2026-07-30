@@ -10,6 +10,8 @@ import deviceRoutes from "./modules/service/device.routes";
 import templateRoutes from "./modules/template/template.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
 import settingsRoutes from "./modules/settings/settings.routes";
+import reportRoutes from "./modules/report/report.routes";
+import qrRoutes from "./modules/qr/qr.routes";
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use("/api/devices", deviceRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/qr", qrRoutes);
 
 app.get("/", (_req, res) => {
   res.json({

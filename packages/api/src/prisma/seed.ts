@@ -100,6 +100,80 @@ async function main() {
     },
   });
 
+  // Beyaz Esya Servisi
+  await prisma.sectorTemplate.upsert({
+    where: { id: "template-appliance" },
+    update: {},
+    create: {
+      id: "template-appliance",
+      name: "Beyaz Esya Servisi",
+      isSystem: true,
+      fields: [
+        { key: "brand", label: "Marka", type: "select", options: ["Arcelik", "Beko", "Bosch", "Siemens", "Vestel", "Profilo", "Diger"] },
+        { key: "model", label: "Model", type: "text", placeholder: "6144 YS" },
+        { key: "product_group", label: "Urun Grubu", type: "select", options: ["Buzdolabi", "Camasir Makinesi", "Bulasik Makinesi", "Firin", "Kurutma Makinesi", "Diger"] },
+        { key: "fault_type", label: "Ariza", type: "select", options: ["Sogutmuyor", "Ses yapiyor", "Su akitiyor", "Calismiyor", "Kapi acilmiyor", "Ekran hatasi", "Diger"] },
+        { key: "serial_no", label: "Seri No", type: "text" },
+        { key: "warranty", label: "Garanti", type: "select", options: ["Yetkili Servis Garantili", "Genisletilmis Garanti", "Garantisi Bitmis"] },
+      ],
+    },
+  });
+
+  // Televizyon Servisi
+  await prisma.sectorTemplate.upsert({
+    where: { id: "template-tv" },
+    update: {},
+    create: {
+      id: "template-tv",
+      name: "Televizyon Servisi",
+      isSystem: true,
+      fields: [
+        { key: "brand", label: "Marka", type: "select", options: ["LG", "Samsung", "Sony", "Philips", "TCL", "Vestel", "Diger"] },
+        { key: "model", label: "Model", type: "text" },
+        { key: "panel_type", label: "Panel Tipi", type: "select", options: ["OLED", "QLED", "LED", "NanoCell", "LCD"] },
+        { key: "screen_size", label: "Ekran Boyutu", type: "select", options: ["32\"", "43\"", "50\"", "55\"", "65\"", "75\"", "85\""] },
+        { key: "fault_type", label: "Ariza", type: "select", options: ["Goruntu yok", "Ses yok", "Cizgi var", "Ekran kirik", "Acilmiyor", "Piksel olu", "Diger"] },
+      ],
+    },
+  });
+
+  // Klima / Kombi Servisi
+  await prisma.sectorTemplate.upsert({
+    where: { id: "template-hvac" },
+    update: {},
+    create: {
+      id: "template-hvac",
+      name: "Klima / Kombi Servisi",
+      isSystem: true,
+      fields: [
+        { key: "brand", label: "Marka", type: "select", options: ["Daikin", "Mitsubishi", "Vaillant", "Bosch", "Baymak", "Demirdokum", "Diger"] },
+        { key: "model", label: "Model", type: "text" },
+        { key: "device_type", label: "Cihaz Tipi", type: "select", options: ["Klima", "Kombi", "Petek", "Termosifon"] },
+        { key: "capacity", label: "Kapasite", type: "select", options: ["9000 BTU", "12000 BTU", "18000 BTU", "24000 BTU", "20.000 kcal", "24.000 kcal", "30.000 kcal"] },
+        { key: "fault_type", label: "Ariza / Islem", type: "select", options: ["Sogutmuyor", "Isitmiyor", "Su akitiyor", "Gaz kacagi", "Ariza kodu", "Yillik bakim", "Gaz dolumu", "Diger"] },
+      ],
+    },
+  });
+
+  // Otomotiv / LPG Servisi
+  await prisma.sectorTemplate.upsert({
+    where: { id: "template-auto" },
+    update: {},
+    create: {
+      id: "template-auto",
+      name: "Otomotiv / LPG Servisi",
+      isSystem: true,
+      fields: [
+        { key: "brand", label: "Marka", type: "select", options: ["Fiat", "Toyota", "VW", "Renault", "Ford", "Hyundai", "Diger"] },
+        { key: "model", label: "Model", type: "text", placeholder: "Egea" },
+        { key: "year", label: "Yil", type: "text", placeholder: "2020" },
+        { key: "plate", label: "Plaka", type: "text", placeholder: "34 ABC 123" },
+        { key: "mileage", label: "Kilometre", type: "text", placeholder: "85.000 km" },
+        { key: "fault_type", label: "Ariza", type: "select", options: ["LPG beyni", "Enjektor", "Regulator", "Motor arizasi", "Elektrik arizasi", "Fren sistemi", "Diger"] },
+      ],
+    },
+  });
+
   console.log("Seed tamamlandi.");
   console.log("");
   console.log("Test hesaplari:");

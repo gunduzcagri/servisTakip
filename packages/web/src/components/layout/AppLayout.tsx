@@ -9,6 +9,7 @@ import {
   UserOutlined,
   ShopOutlined,
   MailOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "../../stores/auth";
 
@@ -19,6 +20,7 @@ const menuItems = {
   ADMIN: [
     { key: "/", icon: <DashboardOutlined />, label: "Dashboard" },
     { key: "/services", icon: <ToolOutlined />, label: "Servis Kayitlari" },
+    { key: "/admin/reports", icon: <BarChartOutlined />, label: "Raporlama" },
     { key: "/admin/users", icon: <UserOutlined />, label: "Kullanicilar" },
     { key: "/admin/templates", icon: <ShopOutlined />, label: "Sektor Sablonlari" },
     { key: "/admin/parts", icon: <SettingOutlined />, label: "Parca Stok" },

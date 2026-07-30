@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Tag, Button, Select, Space, Card, Typography } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Table, Tag, Button, Select, Space, Card, Typography, App, Modal } from "antd";
+import { PlusOutlined, BarcodeOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import api from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
+import { BarcodeScanner } from "../../components/BarcodeScanner";
 
 const { Title } = Typography;
 
@@ -40,6 +41,8 @@ export default function ServiceListPage() {
   const { user } = useAuthStore();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<string | undefined>();
+  const [showScanner, setShowScanner] = useState(false);
+  const { message } = App.useApp();
 
   const { data, isLoading } = useQuery({
     queryKey: ["services", page, status],
@@ -109,11 +112,18 @@ export default function ServiceListPage() {
         <Title level={3} style={{ margin: 0 }}>
           Servis Kayitlari
         </Title>
-        {(user?.role === "ADMIN" || user?.role === "TECHNICIAN") && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/services/new")}>
-            Yeni Kayit
-          </Button>
-        )}
+        <Space>
+          {(user?.role === "ADMIN" || user?.role === "TECHNICIAN") && (
+            <>
+              <Button icon={<BarcodeOutlined />} onClick={() => setShowScanner(true)}>
+                Barkod Oku
+              </Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/services/new")}>
+                Yeni Kayit
+              </Button>
+            </>
+          )}
+        </Space>
       </div>
 
       <Card>
@@ -152,6 +162,22 @@ export default function ServiceListPage() {
           })}
         />
       </Card>
+
+      <Modal
+        title="Barkod Okuyucu"
+        open={showScanner}
+        onCancel={() => setShowScanner(false)}
+        footer={null}
+        width={450}
+      >
+        <BarcodeScanner
+          onScan={(result) => {
+            message.success(`Kayit bulundu: ${result.trackingNumber}`);
+            setShowScanner(false);
+            navigate(`/services/${result.id}`);
+          }}
+        />
+      </Modal>
     </div>
   );
 }

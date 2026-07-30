@@ -1,0 +1,41 @@
+{
+  "name": "ServisNet - Servis Takip Sistemi",
+  "short_name": "ServisNet",
+  "description": "Cok sektorlu servis yonetim platformu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1677ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Yeni Kayit",
+      "short_name": "Yeni",
+      "description": "Yeni servis kaydi olustur",
+      "url": "/services/new",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Servisler",
+      "short_name": "Servisler",
+      "description": "Tum servis kayitlarini goruntule",
+      "url": "/services",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
